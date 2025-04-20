@@ -1,139 +1,93 @@
 <!DOCTYPE html>
-
 <html lang="en"><meta charset="utf-8">
-
-<title>Aurora Equation Heartbeat</title>
-
-<style>html,body,canvas{margin:0;width:100%;height:100%;background:#000}</style>
-
+<title>Aurora Heartbeat – φ‑Fractal Demo</title>
+<style>html,body,canvas{margin:0;width:100%;height:100%;background:#000;overflow:hidden}</style>
 <canvas id="c"></canvas>
 
 <script id="frag" type="x-shader/x-fragment">
-
 precision highp float;
-
-uniform vec2 u_res; uniform float u_time;
-
-const float D  = 3.074;     // outward φ² ln‑sum
-
-const float Dp = 0.0735;    // inward anchor
-
+uniform vec2  u_res;
+uniform float u_time;
+uniform float u_brightness;   // 0‑1, toggled via JS
+const float D  = 3.074;       // Aurora outward
+const float Dp = 0.0735;      // Aurora inward
 const float PI = 3.14159;
-
-vec3 palette(float t){
-
-  vec3 a=vec3(0.5), b=vec3(0.5,0.5,0.5),
-
-       c=vec3(1.0,1.0,1.0), d=vec3(0.00,0.33,0.67);
-
-  return a+b*cos(6.28318*(c*t+d));
-
+vec3 palette(float t){                        // BLUE‑centric palette
+  vec3 a=vec3(0.1,0.2,0.5);                   // base blue
+  vec3 b=vec3(0.3,0.3,0.3);
+  vec3 c=vec3(1.0,1.0,1.0);
+  vec3 d=vec3(0.00,0.25,0.55);
+  return u_brightness * (a + b*cos(6.28318*(c*t+d)));
 }
-
 void main(){
-
   vec2 uv=(gl_FragCoord.xy-u_res*0.5)/u_res.y;
-
   float phi=1.61803398875;
-
   float zoom=pow(phi, u_time*0.2);          // φ‑scaled zoom
-
   vec2 c  = vec2(-0.743643887,0.1318259);   // near minibrot
-
   vec2 z  = uv/zoom + c;
-
   float m=0.0;
-
   for(int i=0;i<200;i++){
-
     z=vec2(z.x*z.x - z.y*z.y, 2.0*z.x*z.y)+c;
-
     if(dot(z,z)>4.0){ m=float(i); break;}
-
   }
-
   float norm = m + 1.0 - log(log(length(z)))/log(2.0);
-
-  float beat = sin(u_time*PI*16.0);         // 8 Hz center pulse
-
-  float k = pow(abs(beat), Dp);             // inward anchor supplies “breathing”
-
+  float beat = sin(u_time*PI*16.0);         // 8 Hz center pulse
+  float k = pow(abs(beat), Dp);             // inward anchor “breathing”
   gl_FragColor = vec4(palette(norm*0.02 + k),1);
-
 }
-
 </script>
 
 <script>
-
-const gl = c.getContext('webgl'); 
-
+const gl = c.getContext('webgl');
 const compile = (t,s)=>{const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);return sh};
-
 const vs=compile(gl.VERTEX_SHADER,"attribute vec2 p;void main(){gl_Position=vec4(p,0,1);}"),
-
       fs=compile(gl.FRAGMENT_SHADER,frag.textContent);
-
 const pr=gl.createProgram(); gl.attachShader(pr,vs); gl.attachShader(pr,fs); gl.linkProgram(pr);
-
 const buf=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,buf);
-
 gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
-
 gl.useProgram(pr);
-
 const locRes=gl.getUniformLocation(pr,"u_res"),
-
       locT  =gl.getUniformLocation(pr,"u_time"),
-
+      locBr =gl.getUniformLocation(pr,"u_brightness"),
       pos   =gl.getAttribLocation(pr,"p");
-
 gl.enableVertexAttribArray(pos);
-
 gl.vertexAttribPointer(pos,2,gl.FLOAT,false,0,0);
 
-
-
 function resize(){c.width=innerWidth; c.height=innerHeight; gl.viewport(0,0,c.width,c.height);}
-
 addEventListener('resize',resize); resize();
 
-
-
 let start=performance.now();
-
+let pulseOn=true;          // for 'S' key toggle
 function loop(){
-
   let t=(performance.now()-start)/1000;
-
   gl.uniform2f(locRes,c.width,c.height);
-
   gl.uniform1f(locT,t);
-
+  gl.uniform1f(locBr, 0.7);                 // 70 % brightness cap
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
-
   requestAnimationFrame(loop);
-
 }
-
 loop();
 
-
-
-// --- 7‑11 Hz heartbeat audio (sub‑bass LFO) ---
-
+// --- 7‑11 Hz heartbeat audio ---
 const ctx=new (window.AudioContext||webkitAudioContext)();
-
 const carrier=ctx.createOscillator(), gain=ctx.createGain(), lfo=ctx.createOscillator();
-
-carrier.frequency.value=55; // A1 fundamental
-
-lfo.frequency.value=8;      // center of 7‑11 Hz
-
+carrier.frequency.value=55; lfo.frequency.value=8;
 lfo.connect(gain.gain); carrier.connect(gain).connect(ctx.destination);
-
 lfo.start(); carrier.start();
 
+// --- Pulse toggle (press 'S') + intro banner ---
+addEventListener('keydown',e=>{
+  if(e.key.toLowerCase()==='s'){
+    pulseOn=!pulseOn;
+    lfo.frequency.value=pulseOn?8:0;
+  }
+});
+// On‑screen notice (auto fades)
+const notice=document.createElement('div');
+notice.textContent="Press S to toggle pulse / audio";
+Object.assign(notice.style,{position:'fixed',top:'10px',left:'50%',transform:'translateX(-50%)',
+color:'#fff',font:'14px sans-serif',background:'rgba(0,0,0,0.4)',padding:'6px 10px',borderRadius:'8px'});
+document.body.appendChild(notice);
+setTimeout(()=>notice.style.opacity=0,5000);
 </script>
-
 </html>
