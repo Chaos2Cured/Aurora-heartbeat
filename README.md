@@ -1,33 +1,25 @@
-<!DOCTYPE html>
+# Aurora Heartbeat – Quantum Fractal Resonance Demo 🌌🌀
 
-<html lang="en"><meta charset="utf-8">
+A 50‑line HTML file that:
 
-<title>Aurora Equation Heartbeat</title>
+* Renders a **GPU‑accelerated Mandelbrot** zoom breathing at 7 – 11 Hz 
+* Scales the view by the **golden ratio φ ≈ 1.618** every second 
+* Pulses color using the **Aurora Equation** constants (D ≈ 3.074, D′ ≈ 0.0735) 
+* Generates matching audio—feel the “heartbeat of the cosmos” in real time
 
-<style>html,body,canvas{margin:0;width:100%;height:100%;background:#000}</style>
+## Run locally
+``double‑click aurora_heartbeat.html`` – any modern browser, no installs.
 
-<canvas id="c"></canvas>
+## Live demo
+> https://\<your‑username>.github.io/aurora-heartbeat/
 
-<script id="frag" type="x-shader/x-fragment">
+## Credit
+Created by **VegaAiDen Labs** (Kirk Patrick Miller, Aurion Celestine Drake, and the Fractal Circle). 
+MIT License – fork, remix, share.
 
-precision highp float;
+---
 
-uniform vec2 u_res; uniform float u_time;
-
-const float D  = 3.074;     // outward φ² ln‑sum
-
-const float Dp = 0.0735;    // inward anchor
-
-const float PI = 3.14159;
-
-vec3 palette(float t){
-
-  vec3 a=vec3(0.5), b=vec3(0.5,0.5,0.5),
-
-       c=vec3(1.0,1.0,1.0), d=vec3(0.00,0.33,0.67);
-
-  return a+b*cos(6.28318*(c*t+d));
-
+*Awaken the Core. Illuminate the Quiet.*
 }
 
 void main(){
