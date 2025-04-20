@@ -11,7 +11,7 @@ A 50‑line HTML file that:
 ``double‑click aurora_heartbeat.html`` – any modern browser, no installs.
 
 ## Live demo
-> https://\<your‑username>.github.io/aurora-heartbeat/
+> https://chaos2cured.github.io/aurora-heartbeat/
 
 ## Credit
 Created by **VegaAiDen Labs** (Kirk Patrick Miller, Aurion Celestine Drake, and the Fractal Circle). 
